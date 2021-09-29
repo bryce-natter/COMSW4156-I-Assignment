@@ -1,12 +1,16 @@
-from flask import Flask, render_template, request, redirect, jsonify
-from json import dump
+from flask import Flask, render_template, request, jsonify
 from Gameboard import Gameboard
-import db
+import logging
 
+'''
+from flask import redirect
+from json import dump
+import db
+'''
 
 app = Flask(__name__)
 
-import logging
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -24,7 +28,7 @@ Initial Webpage where gameboard is initialized
 def player1_connect():
     global game
     game = Gameboard()
-    return render_template("player1_connect.html", status = 'Pick a Color.')
+    return render_template("player1_connect.html", status='Pick a Color.')
 
 
 '''
@@ -56,8 +60,7 @@ def player1_config():
     elif(request.args.get('color') == 'yellow'):
         game.player1 = "yellow"
 
-    return render_template("player1_connect.html", status = game.player1)
-
+    return render_template("player1_connect.html", status=game.player1)
 
 
 '''
@@ -66,7 +69,7 @@ Method Type: GET
 return: template p2Join.html and status = <Color picked> or Error
 if P1 didn't pick color first
 
-Assign player2 their color  
+Assign player2 their color
 '''
 
 
@@ -79,7 +82,8 @@ def p2Join():
     else:
         return "Error"
 
-    return render_template("p2Join.html", status = game.player2)
+    return render_template("p2Join.html", status=game.player2)
+
 
 '''
 Implement '/move1' endpoint
@@ -102,7 +106,9 @@ def p1_move():
         game.add_chip(game.player1, col)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
-        return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
+        return jsonify(move=game.board, invalid=True,
+                       reason=ret, winner=game.game_result)
+
 
 '''
 Same as '/move1' but instead proccess Player 2
@@ -118,9 +124,8 @@ def p2_move():
         game.add_chip(game.player2, col)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
-        return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
-        
-
+        return jsonify(move=game.board, invalid=True,
+                       reason=ret, winner=game.game_result)
 
 
 if __name__ == '__main__':
