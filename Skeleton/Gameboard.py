@@ -7,8 +7,8 @@ class Gameboard():
         self.board = [[0 for x in range(7)] for y in range(6)]  
         self.game_result = ""
         self.current_turn = 'p1'
-        self.remaining_moves = 42
-    
+        self.remaining_moves = 43
+
     def validate_move(self, player, column):
         if (self.game_result != ""):
             return "End Of Game"
@@ -22,7 +22,6 @@ class Gameboard():
             return "Overflow"
         else:
             return "Valid"
-           
 
     def add_chip(self, player, column):
         for row in range(5,-1,-1):

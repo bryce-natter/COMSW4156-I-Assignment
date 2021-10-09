@@ -24,6 +24,7 @@ Initial Webpage where gameboard is initialized
 def player1_connect():
     global game
     game = Gameboard()
+    db.init_db()
     return render_template("player1_connect.html", status = 'Pick a Color.')
 
 
@@ -51,10 +52,23 @@ Assign player1 their color
 
 @app.route('/p1Color', methods=['GET'])
 def player1_config():
-    if(request.args.get('color') == 'red'):
-        game.player1 = "red"
-    elif(request.args.get('color') == 'yellow'):
-        game.player1 = "yellow"
+    save = db.getMove()
+    if(save):
+        game.current_turn       = save[0]
+        game.winner             = save[2]
+        game.player1            = save[3]
+        game.player2            = save[4]
+        game.remaining_moves    = save[5]
+        for row, srow in zip(game.gameboard, save[1].splitlines()):
+            row = srow.split(' ')
+    else:
+        if(request.args.get('color') == 'red'):
+            game.player1 = "red"
+            game.player2 = "yellow"
+        elif(request.args.get('color') == 'yellow'):
+            game.player1 = "yellow"
+            game.player2 = "red"
+
 
     return render_template("player1_connect.html", status = game.player1)
 
@@ -72,12 +86,22 @@ Assign player2 their color
 
 @app.route('/p2Join', methods=['GET'])
 def p2Join():
-    if(game.player1 == "red"):
-        game.player2 = "yellow"
-    elif(game.player1 == "yellow"):
-        game.player2 = "red"
+    save = db.getMove()
+    if (save):
+        game.current_turn       = save[0]
+        game.winner             = save[2]
+        game.player1            = save[3]
+        game.player2            = save[4]
+        game.remaining_moves    = save[5]
+        for row, srow in zip(game.gameboard, save[1].splitlines()):
+            row = srow.split(' ')
     else:
-        return "Error"
+        if(game.player1 == "red"):
+            game.player2 = "yellow"
+        elif(game.player1 == "yellow"):
+            game.player2 = "red"
+        else:
+            return "Error"
 
     return render_template("p2Join.html", status = game.player2)
 
@@ -100,6 +124,9 @@ def p1_move():
 
     if (ret == "Valid"):
         game.add_chip(game.player1, col)
+        move = (game.current_turn, '\n'.join(' '.join(map(str,row)) for row in game.board),
+                game.game_result, game.player1, game.player2, game.remaining_moves)
+        db.add_move(move)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
         return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
@@ -116,6 +143,9 @@ def p2_move():
 
     if (ret == "Valid"):
         game.add_chip(game.player2, col)
+        move = (game.current_turn, '\n'.join(' '.join(map(str,row)) for row in game.board),
+                game.game_result, game.player1, game.player2, game.remaining_moves)
+        db.add_move(move)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
         return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
