@@ -1,12 +1,11 @@
-from flask import Flask, render_template, request, redirect, jsonify
-from json import dump
+import logging
+from flask import Flask, render_template, request, jsonify
 from Gameboard import Gameboard
 import db
 
 
 app = Flask(__name__)
 
-import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -25,7 +24,7 @@ def player1_connect():
     global game
     game = Gameboard()
     db.init_db()
-    return render_template("player1_connect.html", status = 'Pick a Color.')
+    return render_template("player1_connect.html", status='Pick a Color.')
 
 
 '''
@@ -54,12 +53,12 @@ Assign player1 their color
 def player1_config():
     save = db.getMove()
     if(save):
-        game.current_turn       = save[0]
-        game.winner             = save[2]
-        game.player1            = save[3]
-        game.player2            = save[4]
-        game.remaining_moves    = save[5]
-        for row, srow in zip(game.gameboard, save[1].splitlines()):
+        game.current_turn = save[0]
+        game.winner = save[2]
+        game.player1 = save[3]
+        game.player2 = save[4]
+        game.remaining_moves = save[5]
+        for row, srow in zip(game.board, save[1].splitlines()):
             row = srow.split(' ')
     else:
         if(request.args.get('color') == 'red'):
@@ -69,9 +68,7 @@ def player1_config():
             game.player1 = "yellow"
             game.player2 = "red"
 
-
-    return render_template("player1_connect.html", status = game.player1)
-
+    return render_template("player1_connect.html", status=game.player1)
 
 
 '''
@@ -80,7 +77,7 @@ Method Type: GET
 return: template p2Join.html and status = <Color picked> or Error
 if P1 didn't pick color first
 
-Assign player2 their color  
+Assign player2 their color
 '''
 
 
@@ -88,12 +85,13 @@ Assign player2 their color
 def p2Join():
     save = db.getMove()
     if (save):
-        game.current_turn       = save[0]
-        game.winner             = save[2]
-        game.player1            = save[3]
-        game.player2            = save[4]
-        game.remaining_moves    = save[5]
-        for row, srow in zip(game.gameboard, save[1].splitlines()):
+        print("GOT MOVE")
+        game.current_turn = save[0]
+        game.winner = save[2]
+        game.player1 = save[3]
+        game.player2 = save[4]
+        game.remaining_moves = save[5]
+        for row, srow in zip(game.board, save[1].splitlines()):
             row = srow.split(' ')
     else:
         if(game.player1 == "red"):
@@ -103,7 +101,8 @@ def p2Join():
         else:
             return "Error"
 
-    return render_template("p2Join.html", status = game.player2)
+    return render_template("p2Join.html", status=game.player2)
+
 
 '''
 Implement '/move1' endpoint
@@ -124,12 +123,16 @@ def p1_move():
 
     if (ret == "Valid"):
         game.add_chip(game.player1, col)
-        move = (game.current_turn, '\n'.join(' '.join(map(str,row)) for row in game.board),
-                game.game_result, game.player1, game.player2, game.remaining_moves)
+        move = (game.current_turn,
+                '\n'.join(' '.join(map(str, row)) for row in game.board),
+                game.game_result, game.player1, game.player2,
+                game.remaining_moves)
         db.add_move(move)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
-        return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
+        return jsonify(move=game.board, invalid=True,
+                       reason=ret, winner=game.game_result)
+
 
 '''
 Same as '/move1' but instead proccess Player 2
@@ -143,14 +146,15 @@ def p2_move():
 
     if (ret == "Valid"):
         game.add_chip(game.player2, col)
-        move = (game.current_turn, '\n'.join(' '.join(map(str,row)) for row in game.board),
-                game.game_result, game.player1, game.player2, game.remaining_moves)
+        move = (game.current_turn,
+                '\n'.join(' '.join(map(str, row)) for row in game.board),
+                game.game_result, game.player1, game.player2,
+                game.remaining_moves)
         db.add_move(move)
         return jsonify(move=game.board, invalid=False, winner=game.game_result)
     else:
-        return jsonify(move=game.board, invalid=True, reason=ret, winner=game.game_result)
-        
-
+        return jsonify(move=game.board, invalid=True,
+                       reason=ret, winner=game.game_result)
 
 
 if __name__ == '__main__':

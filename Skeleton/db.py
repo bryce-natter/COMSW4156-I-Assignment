@@ -33,24 +33,25 @@ Insert Tuple into table
 
 
 def add_move(move):  # will take in a tuple
-    
+
     conn = None
     print(move)
     try:
         conn = sqlite3.connect('sqlite_db')
         cur = conn.cursor()
         cmd = ('INSERT INTO GAME(' +
-                     'current_turn, board, winner, player1, player2, remaining_moves)' +
-                     '\n\t VALUES(' + str(move) + ')' )
+               'current_turn, board, winner, ' +
+               'player1, player2, remaining_moves)' +
+               '\n\t VALUES(' + str(move) + ')')
         print(cmd)
         cur.execute('INSERT INTO GAME(' +
-                     'current_turn, board, winner, player1, player2, remaining_moves)' +
-                     ' VALUES(' + str(move) + ')')
-        conn.commit
+                    'current_turn, board, winner, ' +
+                    'player1, player2, remaining_moves)' +
+                    ' VALUES' + str(move))
+        conn.commit()
         print('Move saved')
     except Error as e:
         print(e)
-
 
 
 '''
@@ -66,9 +67,10 @@ def getMove():
     try:
         conn = sqlite3.connect('sqlite_db')
         cur = conn.cursor()
-        cur.execute('SELECT * FROM GAME ORDER BY remaining_moves DESC LIMIT 1')
-        print('Move saved')
-        return cur.fetchall()
+        cur.execute('SELECT * FROM GAME ORDER BY remaining_moves ASC')
+        move = cur.fetchone()
+        print("fetched moved: " + str(move))
+        return move
     except Error as e:
         print(e)
         return False
