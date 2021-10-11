@@ -60,6 +60,7 @@ def player1_config():
         game.remaining_moves = save[5]
         for row, srow in zip(game.board, save[1].splitlines()):
             row = srow.split(' ')
+            print(row)
     else:
         if(request.args.get('color') == 'red'):
             game.player1 = "red"
@@ -93,6 +94,8 @@ def p2Join():
         game.remaining_moves = save[5]
         for row, srow in zip(game.board, save[1].splitlines()):
             row = srow.split(' ')
+            print(row)
+
     else:
         if(game.player1 == "red"):
             game.player2 = "yellow"
